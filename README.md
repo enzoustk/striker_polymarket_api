@@ -1,0 +1,1 @@
+Módulo para fazer todas as chamadas não autenticadas à API da Polymarket
