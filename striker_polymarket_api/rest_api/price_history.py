@@ -2,16 +2,15 @@
 Script para coletar preço histórico do Polymarket para múltiplos eventos
 Processa um DataFrame e retorna com a odd no início de cada evento
 """
-import requests
-from datetime import datetime, timedelta
 import pytz
-import pandas as pd
-import json
 import time
 import random
+import requests
+import pandas as pd
+from datetime import datetime, timedelta
+from striker_polymarket_api.config import URLS
 from typing import Optional, Dict, Any, List, Tuple
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from config import URLS
 
 
 def get_price_history(

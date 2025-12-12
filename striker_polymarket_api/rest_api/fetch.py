@@ -2,9 +2,9 @@ import time
 import random
 import requests
 import pandas as pd
-from config import URLS
 from typing import List, Dict, Any
 from helpers import loading_animation
+from striker_polymarket_api.config import URLS
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 def _fetch_market_data(

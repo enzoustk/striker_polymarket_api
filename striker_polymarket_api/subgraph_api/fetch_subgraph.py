@@ -1,7 +1,7 @@
 import time
 import requests
 import pandas as pd
-from config import URLS, QUERYS
+from striker_polymarket_api.config import URLS, QUERYS
 from helpers import loading_animation 
 from rest_api.fetch import _fetch_market_data
 from concurrent.futures import ProcessPoolExecutor, as_completed
