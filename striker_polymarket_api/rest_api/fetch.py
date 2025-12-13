@@ -11,16 +11,13 @@ def _fetch_market_data(
     df: pd.DataFrame,
     batch_size: int = 100,
     ) -> pd.DataFrame:
-    """
-    (Função original - já estava correta, sem mudanças)
-    """
+    
     if df.empty:
         return df
 
     unique_slugs = df['slug'].unique()
     all_data_dict = {}
     total_batches = (len(unique_slugs) + batch_size - 1) // batch_size
-    
     
     with loading_animation(f"Fetching Market Info (0/{total_batches})") as anim_status:
         for i in range(0, len(unique_slugs), batch_size):
@@ -46,29 +43,36 @@ def _fetch_market_data(
             except Exception as e:
                 print(f'Error trying to fetch market info: {e}')
 
-            # If no Response or Error:
-            if not response or response.status_code != 200:
+            # --- CORREÇÃO AQUI ---
+            
+            # 1. Se deu SUCESSO (200 OK)
+            if response and response.status_code == 200:
+                try:
+                    json_data = response.json()
+                    all_data_dict.update(
+                        _process_market_batch(json_data)
+                    )
+                except Exception as e:
+                    # Se falhar o JSON mesmo com 200, preenche com vazio para não quebrar
+                    print(f"Erro ao processar JSON do lote {batch_num}: {e}")
+                    for slug in batch_slugs:
+                        all_data_dict[slug] = {
+                            'tags': [],
+                            'start_time': None,
+                            'volume': None
+                        }
+
+            # 2. Se FALHOU (Erro ou != 200)
+            else:
+                if response:
+                     print(f"⚠️ Erro na API de Mercado: Status {response.status_code}")
+                
                 for slug in batch_slugs:
                     all_data_dict[slug] = {
                         'tags': [],
                         'start_time': None,
                         'volume': None
                     }
-
-                try:
-                    # Tenta converter para JSON
-                    json_data = response.json()
-                    
-                    # Se der certo, processa e atualiza
-                    all_data_dict.update(
-                        _process_market_batch(json_data)
-                    )
-                except Exception as e:
-                    # Se der erro (não for JSON), avisa no console e não quebra o programa
-                    print(f"\n⚠️ ERRO NO LOTE (Status {response.status_code}): Pular lote.")
-                    print(f"Erro original: {e}")
-                    # Imprime os primeiros 200 caracteres da resposta para sabermos se é Rate Limit
-                    print(f"Conteúdo recebido: {response.text[:200]}")
 
         anim_status['message'] = "Concluindo..."
 
@@ -82,7 +86,6 @@ def _fetch_market_data(
         how='left'
     )
     return combined_df
-
 
 def _process_market_batch(
         markets:dict
