@@ -55,12 +55,20 @@ def _fetch_market_data(
                         'volume': None
                     }
 
-            all_data_dict.update(
-                _process_market_batch(
-                    response.json()
+            try:
+                # Tenta converter para JSON
+                json_data = response.json()
+                
+                # Se der certo, processa e atualiza
+                all_data_dict.update(
+                    _process_market_batch(json_data)
                 )
-            )
-            
+            except Exception as e:
+                # Se der erro (não for JSON), avisa no console e não quebra o programa
+                print(f"\n⚠️ ERRO NO LOTE (Status {response.status_code}): Pular lote.")
+                print(f"Erro original: {e}")
+                # Imprime os primeiros 200 caracteres da resposta para sabermos se é Rate Limit
+                print(f"Conteúdo recebido: {response.text[:200]}")
 
         anim_status['message'] = "Concluindo..."
 
